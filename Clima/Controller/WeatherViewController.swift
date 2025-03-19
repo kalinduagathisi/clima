@@ -15,6 +15,8 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var cityLabel: UILabel!
     @IBOutlet weak var searchTextField: UITextField!
     
+    var weatherManager = WeatherManager()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -28,11 +30,11 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     }
     
     // function to proceed when keyboards go btn pressed
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        searchTextField.endEditing(true)
-        print(searchTextField.text!)
-        return true
-    }
+//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+//        searchTextField.endEditing(true)
+//        print(searchTextField.text!)
+//        return true
+//    }
     
     // inform weather, that textfield should dismiss the keyboard or not
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
@@ -47,6 +49,10 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     
     // clear the textfield once btn pressed
     func textFieldDidEndEditing(_ textField: UITextField) {
+        
+        if let city = searchTextField.text {
+            weatherManager.fetchWeather(cityName: city)
+        }
         searchTextField.text = ""
     }
 }
