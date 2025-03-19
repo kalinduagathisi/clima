@@ -8,66 +8,77 @@
 
 import UIKit
 
-class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManagerDelegate {
+class WeatherViewController: UIViewController {
 
     @IBOutlet weak var conditionImageView: UIImageView!
     @IBOutlet weak var temperatureLabel: UILabel!
     @IBOutlet weak var cityLabel: UILabel!
     @IBOutlet weak var searchTextField: UITextField!
-    
+
     var weatherManager = WeatherManager()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // set the delegate property for weatherManager, Otherviwe it'll be nil
         weatherManager.delegate = self
         searchTextField.delegate = self
     }
 
+}
 
+//MARK: - UITextFieldDelegate
+
+
+extension WeatherViewController: UITextFieldDelegate {
     @IBAction func searchPressed(_ sender: UIButton) {
-        searchTextField.endEditing(true) // dismiss the keyboard once search/ go btn pressed
+        searchTextField.endEditing(true)  // dismiss the keyboard once search/ go btn pressed
         print(searchTextField.text!)
     }
-    
+
     // function to proceed when keyboards go btn pressed
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        searchTextField.endEditing(true)
-//        print(searchTextField.text!)
-//        return true
-//    }
-    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        searchTextField.endEditing(true)
+        print(searchTextField.text!)
+        return true
+    }
+
     // inform weather, that textfield should dismiss the keyboard or not
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         if textField.text != "" {
             return true
-        }
-        else {
+        } else {
             textField.placeholder = "Type something.."
             return false
         }
     }
-    
+
     // clear the textfield once btn pressed
     func textFieldDidEndEditing(_ textField: UITextField) {
-        
+
         if let city = searchTextField.text {
             weatherManager.fetchWeather(cityName: city)
         }
         searchTextField.text = ""
     }
-    
-    func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
+}
+
+
+//MARK: - WeatherManagerDelegate
+
+extension WeatherViewController: WeatherManagerDelegate {
+    func didUpdateWeather(
+        _ weatherManager: WeatherManager, weather: WeatherModel
+    ) {
         DispatchQueue.main.async {
             self.temperatureLabel.text = weather.tempString
-            self.conditionImageView.image = UIImage(systemName: weather.conditionName)
+            self.conditionImageView.image = UIImage(
+                systemName: weather.conditionName)
         }
 
     }
-    
+
     func didFailedWithError(error: any Error) {
         print(error)
     }
 }
-
