@@ -8,6 +8,12 @@
 
 import Foundation
 
+// protocol weatherManagerDelegate
+// protocols are like interfaces in java
+protocol WeatherManagerDelegate {
+    func didUpdateWeather(weather: WeatherModel)
+}
+
 struct WeatherManager {
     
     let apiKey = Secrets.apiKey
@@ -16,6 +22,8 @@ struct WeatherManager {
     var weatherUrl: String {
         return "https://api.openweathermap.org/data/2.5/weather?appid=\(apiKey)"
     }
+    
+    var delegate: WeatherManagerDelegate?
         
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherUrl)&q=\(cityName)"
@@ -40,7 +48,9 @@ struct WeatherManager {
 
                 // do an optional binding
                 if let safeData = data {
-                    self.parseJson(weatherData: safeData)
+                    if let weather = self.parseJson(weatherData: safeData) {
+                        self.delegate?.didUpdateWeather(weather: weather)
+                    }
                 }
             }
 
@@ -49,7 +59,7 @@ struct WeatherManager {
         }
     }
 
-    func parseJson(weatherData: Data) {
+    func parseJson(weatherData: Data) -> WeatherModel? {
         let decoder = JSONDecoder()
 
         do {
@@ -63,9 +73,11 @@ struct WeatherManager {
             let weather = WeatherModel(conditionId: conditionId, cityName: cityName, temperature: temp)
             print(weather.conditionName)
             print(weather.tempString)
+            return weather
 
         } catch {
             print(error)
+            return nil
         }
 
     }
