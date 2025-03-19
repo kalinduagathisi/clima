@@ -11,7 +11,8 @@ import Foundation
 // protocol weatherManagerDelegate
 // protocols are like interfaces in java
 protocol WeatherManagerDelegate {
-    func didUpdateWeather(weather: WeatherModel)
+    func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel)
+    func didFailedWithError(error: Error)
 }
 
 struct WeatherManager {
@@ -28,10 +29,10 @@ struct WeatherManager {
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherUrl)&q=\(cityName)"
         print(urlString)
-        performRequest(urlString: urlString)
+        performRequest(with: urlString)
     }
 
-    func performRequest(urlString: String) {
+    func performRequest(with urlString: String) {
 
         // create a URL
         if let url = URL(string: urlString) {
@@ -42,14 +43,14 @@ struct WeatherManager {
             // Give the session a task
             let task = session.dataTask(with: url) { (data, response, error) in
                 if error != nil {
-                    print(error)
+                    self.delegate?.didFailedWithError(error: error!)
                     return
                 }
 
                 // do an optional binding
                 if let safeData = data {
                     if let weather = self.parseJson(weatherData: safeData) {
-                        self.delegate?.didUpdateWeather(weather: weather)
+                        self.delegate?.didUpdateWeather(self, weather: weather)
                     }
                 }
             }
@@ -76,7 +77,7 @@ struct WeatherManager {
             return weather
 
         } catch {
-            print(error)
+            self.delegate?.didFailedWithError(error: error)
             return nil
         }
 
