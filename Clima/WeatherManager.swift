@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreLocation
 
 // protocol weatherManagerDelegate
 // protocols are like interfaces in java
@@ -21,7 +22,7 @@ struct WeatherManager {
 
     // now weather url will be evaluated at runtime, instead of initialization
     var weatherUrl: String {
-        return "https://api.openweathermap.org/data/2.5/weather?appid=\(apiKey)"
+        return "https://api.openweathermap.org/data/2.5/weather?appid=\(apiKey)&units=metric"
     }
     
     var delegate: WeatherManagerDelegate?
@@ -29,6 +30,11 @@ struct WeatherManager {
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherUrl)&q=\(cityName)"
         print(urlString)
+        performRequest(with: urlString)
+    }
+    
+    func fetchWeather(lattitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+        let urlString = "\(weatherUrl)&lat=\(lattitude)&lon=\(longitude)"
         performRequest(with: urlString)
     }
 

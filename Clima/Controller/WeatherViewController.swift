@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class WeatherViewController: UIViewController {
 
@@ -16,19 +17,27 @@ class WeatherViewController: UIViewController {
     @IBOutlet weak var searchTextField: UITextField!
 
     var weatherManager = WeatherManager()
+    let locationManager = CLLocationManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // set the delegate property for weatherManager, Otherviwe it'll be nil
+        
+        // set locationManager delegate before calling methods on it.
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestLocation()
+        
         weatherManager.delegate = self
         searchTextField.delegate = self
     }
-
+    
+    @IBAction func locationPressed(_ sender: UIButton) {
+        locationManager.requestLocation()
+    }
+    
 }
 
 //MARK: - UITextFieldDelegate
-
 
 extension WeatherViewController: UITextFieldDelegate {
     @IBAction func searchPressed(_ sender: UIButton) {
@@ -74,11 +83,31 @@ extension WeatherViewController: WeatherManagerDelegate {
             self.temperatureLabel.text = weather.tempString
             self.conditionImageView.image = UIImage(
                 systemName: weather.conditionName)
+            self.cityLabel.text = weather.cityName
         }
 
     }
 
     func didFailedWithError(error: any Error) {
+        print(error)
+    }
+}
+
+//MARK: - CLLocationManagerDelegate
+
+
+extension WeatherViewController: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.last {
+            locationManager.stopUpdatingLocation()
+            let lat = location.coordinate.latitude
+            let lon = location.coordinate.longitude
+            
+            weatherManager.fetchWeather(lattitude: lat, longitude: lon)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         print(error)
     }
 }
